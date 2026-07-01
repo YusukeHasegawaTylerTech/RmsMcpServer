@@ -55,7 +55,56 @@ public class RmsMcpServerImplementation
         RegisterTool("search_global_subjects",
             "Search for persons or businesses in RMS by name, DOB, SSN, or other identifiers",
             SearchGlobalSubjectsAsync,
-            paginatedSchema);
+            new
+            {
+                type = "object",
+                properties = new
+                {
+                    firstName = new
+                    {
+                        type = "string",
+                        description = "First name to search for (partial match supported)"
+                    },
+                    lastName = new
+                    {
+                        type = "string",
+                        description = "Last name to search for (partial match supported)"
+                    },
+                    middleName = new
+                    {
+                        type = "string",
+                        description = "Middle name to search for (partial match supported)"
+                    },
+                    dateOfBirth = new
+                    {
+                        type = "string",
+                        description = "Date of birth in ISO format (YYYY-MM-DD)"
+                    },
+                    ssn = new
+                    {
+                        type = "string",
+                        description = "Social Security Number"
+                    },
+                    driversLicenseNumber = new
+                    {
+                        type = "string",
+                        description = "Driver's license number"
+                    },
+                    size = new
+                    {
+                        type = "integer",
+                        description = "Number of results to return (default: 50, max: 100)",
+                        minimum = 1,
+                        maximum = 100
+                    },
+                    start = new
+                    {
+                        type = "integer",
+                        description = "Starting offset for results (default: 0)",
+                        minimum = 0
+                    }
+                }
+            });
 
         RegisterTool("get_person_detail",
             "Get detailed information about a specific person including demographics, addresses, and aliases",
@@ -265,6 +314,16 @@ public class RmsMcpServerImplementation
     {
         var request = new GlobalSubjectSearchRequest
         {
+            // Search parameters
+            FirstName = args.TryGetProperty("firstName", out var fn) ? fn.GetString() : null,
+            LastName = args.TryGetProperty("lastName", out var ln) ? ln.GetString() : null,
+            MiddleName = args.TryGetProperty("middleName", out var mn) ? mn.GetString() : null,
+            DateOfBirth = args.TryGetProperty("dateOfBirth", out var dob)
+                ? new NewWorld.Aegis.Rms.Domain.Contracts.Date(DateTime.Parse(dob.GetString()!))
+                : (NewWorld.Aegis.Rms.Domain.Contracts.Date?)null,
+            SocialSecurityNumber = args.TryGetProperty("ssn", out var ssn) ? ssn.GetString() : null,
+            DriversLicenseNumber = args.TryGetProperty("driversLicenseNumber", out var dl) ? dl.GetString() : null,
+
             // Pagination: default to 50 results starting at 0
             Size = args.TryGetProperty("size", out var s) ? s.GetInt32() : 50,
             Start = args.TryGetProperty("start", out var st) ? st.GetInt32() : 0

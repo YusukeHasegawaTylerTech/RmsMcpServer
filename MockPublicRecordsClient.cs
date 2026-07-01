@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NewWorld.Aegis.Rms.Domain.Contracts;
 using NewWorld.Aegis.Rms.Domain.Contracts.Agencies;
@@ -61,12 +56,65 @@ public class MockPublicRecordsClient : IPublicRecordsClient
         var json = DemoData.GetSearchGlobalSubjectsResponse();
         var response = JsonConvert.DeserializeObject<SearchResponse<NewWorld.Rms.Services.WebApi.Public.Contracts.GlobalSubjects.GlobalSubjectSearchResult>>(json);
 
-        // Apply pagination if specified
-        if (response != null && (globalSubjectSearchRequest.Start.HasValue || globalSubjectSearchRequest.Size.HasValue))
+        // Apply search filters
+        if (response?.Results != null)
         {
-            var start = globalSubjectSearchRequest.Start ?? 0;
-            var size = globalSubjectSearchRequest.Size ?? 50;
-            response.Results = response.Results?.Skip(start).Take(size).ToList();
+            var results = response.Results.AsEnumerable();
+
+            // Filter by first name (case-insensitive partial match)
+            if (!string.IsNullOrEmpty(globalSubjectSearchRequest.FirstName))
+            {
+                results = results.Where(r =>
+                    r.Source?.FirstName?.Contains(globalSubjectSearchRequest.FirstName, StringComparison.OrdinalIgnoreCase) == true);
+            }
+
+            // Filter by last name (case-insensitive partial match)
+            if (!string.IsNullOrEmpty(globalSubjectSearchRequest.LastName))
+            {
+                results = results.Where(r =>
+                    r.Source?.LastName?.Contains(globalSubjectSearchRequest.LastName, StringComparison.OrdinalIgnoreCase) == true);
+            }
+
+            // Filter by middle name (case-insensitive partial match)
+            if (!string.IsNullOrEmpty(globalSubjectSearchRequest.MiddleName))
+            {
+                results = results.Where(r =>
+                    r.Source?.MiddleName?.Contains(globalSubjectSearchRequest.MiddleName, StringComparison.OrdinalIgnoreCase) == true);
+            }
+
+            // Filter by date of birth (exact match)
+            if (globalSubjectSearchRequest.DateOfBirth.HasValue)
+            {
+                var targetDate = globalSubjectSearchRequest.DateOfBirth.Value;
+                results = results.Where(r =>
+                    r.Source?.DateOfBirth.HasValue == true &&
+                    r.Source.DateOfBirth.Value == targetDate);
+            }
+
+            // Filter by SSN (exact match)
+            if (!string.IsNullOrEmpty(globalSubjectSearchRequest.SocialSecurityNumber))
+            {
+                results = results.Where(r =>
+                    r.Source?.SocialSecurityNumber == globalSubjectSearchRequest.SocialSecurityNumber);
+            }
+
+            // Filter by driver's license (exact match)
+            if (!string.IsNullOrEmpty(globalSubjectSearchRequest.DriversLicenseNumber))
+            {
+                results = results.Where(r =>
+                    r.Source?.DriversLicenseNumber == globalSubjectSearchRequest.DriversLicenseNumber);
+            }
+
+            response.Results = results.ToList();
+            response.TotalResults = response.Results.Count();
+
+            // Apply pagination after filtering
+            if (globalSubjectSearchRequest.Start.HasValue || globalSubjectSearchRequest.Size.HasValue)
+            {
+                var start = globalSubjectSearchRequest.Start ?? 0;
+                var size = globalSubjectSearchRequest.Size ?? 50;
+                response.Results = response.Results.Skip(start).Take(size).ToList();
+            }
         }
 
         return Task.FromResult(response!);
