@@ -5,7 +5,9 @@
       "Bash(curl *)",
       "Bash(netstat -ano)",
       "WebFetch(domain:www.google.com)",
-      "WebFetch(domain:docs.claude.ai)"
+      "WebFetch(domain:docs.claude.ai)",
+      "mcp__rms-mcp-server__get_person_detail",
+      "mcp__rms-mcp-server__search_global_subjects"
     ]
   },
   "enabledMcpjsonServers": [

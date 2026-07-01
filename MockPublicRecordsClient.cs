@@ -60,6 +60,15 @@ public class MockPublicRecordsClient : IPublicRecordsClient
         // Deserialize the demo data JSON into the proper response type
         var json = DemoData.GetSearchGlobalSubjectsResponse();
         var response = JsonConvert.DeserializeObject<SearchResponse<NewWorld.Rms.Services.WebApi.Public.Contracts.GlobalSubjects.GlobalSubjectSearchResult>>(json);
+
+        // Apply pagination if specified
+        if (response != null && (globalSubjectSearchRequest.Start.HasValue || globalSubjectSearchRequest.Size.HasValue))
+        {
+            var start = globalSubjectSearchRequest.Start ?? 0;
+            var size = globalSubjectSearchRequest.Size ?? 50;
+            response.Results = response.Results?.Skip(start).Take(size).ToList();
+        }
+
         return Task.FromResult(response!);
     }
 
@@ -70,6 +79,15 @@ public class MockPublicRecordsClient : IPublicRecordsClient
     {
         var json = DemoData.GetSearchAlertsResponse();
         var response = JsonConvert.DeserializeObject<SearchResponse<AlertSearchResponse>>(json);
+
+        // Apply pagination if specified
+        if (response != null && (alertSearchRequest.Start.HasValue || alertSearchRequest.Size.HasValue))
+        {
+            var start = alertSearchRequest.Start ?? 0;
+            var size = alertSearchRequest.Size ?? 50;
+            response.Results = response.Results?.Skip(start).Take(size).ToList();
+        }
+
         return Task.FromResult(response!);
     }
 
@@ -102,6 +120,15 @@ public class MockPublicRecordsClient : IPublicRecordsClient
     {
         var json = DemoData.GetSearchWarrantsResponse();
         var response = JsonConvert.DeserializeObject<SearchResponse<WarrantSearchResult>>(json);
+
+        // Apply pagination if specified
+        if (response != null && (warrantSearchRequest.Start.HasValue || warrantSearchRequest.Size.HasValue))
+        {
+            var start = warrantSearchRequest.Start ?? 0;
+            var size = warrantSearchRequest.Size ?? 50;
+            response.Results = response.Results?.Skip(start).Take(size).ToList();
+        }
+
         return Task.FromResult(response!);
     }
 
@@ -112,6 +139,15 @@ public class MockPublicRecordsClient : IPublicRecordsClient
     {
         var json = DemoData.GetSearchArrestsResponse();
         var response = JsonConvert.DeserializeObject<SearchResponse<ArrestSearchResult>>(json);
+
+        // Apply pagination if specified
+        if (response != null && (arrestSearchRequest.Start.HasValue || arrestSearchRequest.Size.HasValue))
+        {
+            var start = arrestSearchRequest.Start ?? 0;
+            var size = arrestSearchRequest.Size ?? 50;
+            response.Results = response.Results?.Skip(start).Take(size).ToList();
+        }
+
         return Task.FromResult(response!);
     }
 

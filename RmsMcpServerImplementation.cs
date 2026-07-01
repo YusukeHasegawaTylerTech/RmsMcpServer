@@ -31,13 +31,47 @@ public class RmsMcpServerImplementation
 
     private void RegisterTools()
     {
+        var paginatedSchema = new
+        {
+            type = "object",
+            properties = new
+            {
+                size = new
+                {
+                    type = "integer",
+                    description = "Number of results to return (default: 50, max: 100)",
+                    minimum = 1,
+                    maximum = 100
+                },
+                start = new
+                {
+                    type = "integer",
+                    description = "Starting offset for results (default: 0)",
+                    minimum = 0
+                }
+            }
+        };
+
         RegisterTool("search_global_subjects",
             "Search for persons or businesses in RMS by name, DOB, SSN, or other identifiers",
-            SearchGlobalSubjectsAsync);
+            SearchGlobalSubjectsAsync,
+            paginatedSchema);
 
         RegisterTool("get_person_detail",
             "Get detailed information about a specific person including demographics, addresses, and aliases",
-            GetPersonDetailAsync);
+            GetPersonDetailAsync,
+            new
+            {
+                type = "object",
+                properties = new
+                {
+                    personId = new
+                    {
+                        type = "integer",
+                        description = "The person ID to retrieve details for"
+                    }
+                }
+            });
 
         RegisterTool("search_incidents",
             "Search for RMS incidents/reports by date range, case number, or location",
@@ -45,32 +79,60 @@ public class RmsMcpServerImplementation
 
         RegisterTool("get_incident_detail",
             "Get complete details for a specific incident including offenses, subjects, and narrative",
-            GetIncidentDetailAsync);
+            GetIncidentDetailAsync,
+            new
+            {
+                type = "object",
+                properties = new
+                {
+                    incidentId = new
+                    {
+                        type = "integer",
+                        description = "The incident/case ID to retrieve details for"
+                    }
+                }
+            });
 
         RegisterTool("search_arrests",
             "Search for arrests by date range, person, or agency",
-            SearchArrestsAsync);
+            SearchArrestsAsync,
+            paginatedSchema);
 
         RegisterTool("search_warrants",
             "Search for active or historical warrants by person or warrant number",
-            SearchWarrantsAsync);
+            SearchWarrantsAsync,
+            paginatedSchema);
 
         RegisterTool("search_alerts",
             "Search for alerts/cautions associated with persons, locations, or vehicles",
-            SearchAlertsAsync);
+            SearchAlertsAsync,
+            paginatedSchema);
 
         RegisterTool("get_person_activity",
             "Get complete activity history for a person including incidents, arrests, and citations",
-            GetPersonActivityAsync);
+            GetPersonActivityAsync,
+            new
+            {
+                type = "object",
+                properties = new
+                {
+                    globalSubjectId = new
+                    {
+                        type = "integer",
+                        description = "The global subject ID to retrieve activity for"
+                    }
+                }
+            });
     }
 
-    private void RegisterTool(string name, string description, Func<JsonElement, Task<string>> handler)
+    private void RegisterTool(string name, string description, Func<JsonElement, Task<string>> handler, object? inputSchema = null)
     {
         _tools[name] = new ToolDefinition
         {
             Name = name,
             Description = description,
-            Handler = handler
+            Handler = handler,
+            InputSchema = inputSchema
         };
     }
 
@@ -130,7 +192,7 @@ public class RmsMcpServerImplementation
                 {
                     name = t.Name,
                     description = t.Description,
-                    inputSchema = new
+                    inputSchema = t.InputSchema ?? new
                     {
                         type = "object",
                         properties = new { }
@@ -201,7 +263,12 @@ public class RmsMcpServerImplementation
     // Tool handlers - call through IPublicRecordsClient interface
     private async Task<string> SearchGlobalSubjectsAsync(JsonElement args)
     {
-        var request = new GlobalSubjectSearchRequest();
+        var request = new GlobalSubjectSearchRequest
+        {
+            // Pagination: default to 50 results starting at 0
+            Size = args.TryGetProperty("size", out var s) ? s.GetInt32() : 50,
+            Start = args.TryGetProperty("start", out var st) ? st.GetInt32() : 0
+        };
 
         var response = await _rmsClient.SearchGlobalSubjectsAsync(
             request,
@@ -246,7 +313,12 @@ public class RmsMcpServerImplementation
 
     private async Task<string> SearchArrestsAsync(JsonElement args)
     {
-        var request = new ArrestSearchRequest();
+        var request = new ArrestSearchRequest
+        {
+            // Pagination: default to 50 results starting at 0
+            Size = args.TryGetProperty("size", out var s) ? s.GetInt32() : 50,
+            Start = args.TryGetProperty("start", out var st) ? st.GetInt32() : 0
+        };
 
         var response = await _rmsClient.SearchArrestsAsync(
             request,
@@ -258,7 +330,12 @@ public class RmsMcpServerImplementation
 
     private async Task<string> SearchWarrantsAsync(JsonElement args)
     {
-        var request = new WarrantSearchRequest();
+        var request = new WarrantSearchRequest
+        {
+            // Pagination: default to 50 results starting at 0
+            Size = args.TryGetProperty("size", out var s) ? s.GetInt32() : 50,
+            Start = args.TryGetProperty("start", out var st) ? st.GetInt32() : 0
+        };
 
         var response = await _rmsClient.SearchWarrantsAsync(
             request,
@@ -270,7 +347,12 @@ public class RmsMcpServerImplementation
 
     private async Task<string> SearchAlertsAsync(JsonElement args)
     {
-        var request = new AlertSearchRequest();
+        var request = new AlertSearchRequest
+        {
+            // Pagination: default to 50 results starting at 0
+            Size = args.TryGetProperty("size", out var s) ? s.GetInt32() : 50,
+            Start = args.TryGetProperty("start", out var st) ? st.GetInt32() : 0
+        };
 
         var response = await _rmsClient.SearchAlertsAsync(
             request,
@@ -302,5 +384,6 @@ public class RmsMcpServerImplementation
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public Func<JsonElement, Task<string>> Handler { get; set; } = null!;
+        public object? InputSchema { get; set; }
     }
 }

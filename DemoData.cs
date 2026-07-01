@@ -7,50 +7,87 @@ namespace RmsMcpServer;
 /// </summary>
 public static class DemoData
 {
+    private static object[]? _cachedPersonRegistry;
+    private static readonly object _cacheLock = new object();
+
     public static string GetSearchGlobalSubjectsResponse()
     {
+        if (_cachedPersonRegistry == null)
+        {
+            lock (_cacheLock)
+            {
+                if (_cachedPersonRegistry == null)
+                {
+                    _cachedPersonRegistry = GenerateDemoPersonRegistry(100);
+                }
+            }
+        }
+
         var response = new
         {
-            results = new[]
-            {
-                new
-                {
-                    id = 12345,
-                    globalSubjectId = 12345,
-                    lastName = "SMITH",
-                    firstName = "JOHN",
-                    middleName = "DAVID",
-                    dateOfBirth = (object?)new { ticks = new DateTime(1985, 3, 15).Ticks },
-                    ssn = "***-**-4567",
-                    race = "White",
-                    sex = "Male",
-                    city = "METROPOLIS",
-                    state = "CA",
-                    hasWarrants = true,
-                    hasAlerts = true
-                },
-                new
-                {
-                    id = 12346,
-                    globalSubjectId = 12346,
-                    lastName = "SMITH",
-                    firstName = "JANE",
-                    middleName = "MARIE",
-                    dateOfBirth = (object?)new { ticks = new DateTime(1990, 7, 22).Ticks },
-                    ssn = "***-**-7890",
-                    race = "White",
-                    sex = "Female",
-                    city = "SPRINGFIELD",
-                    state = "CA",
-                    hasWarrants = false,
-                    hasAlerts = false
-                }
-            },
-            totalCount = 2,
+            results = _cachedPersonRegistry,
+            totalCount = _cachedPersonRegistry.Length,
             hasMore = false
         };
 
         return JsonConvert.SerializeObject(response, Formatting.Indented);
+    }
+
+    private static object[] GenerateDemoPersonRegistry(int count)
+    {
+        var lastNames = new[] { "SMITH", "JOHNSON", "WILLIAMS", "BROWN", "JONES", "GARCIA", "MILLER", "DAVIS", "RODRIGUEZ", "MARTINEZ", "HERNANDEZ", "LOPEZ", "GONZALEZ", "WILSON", "ANDERSON", "THOMAS", "TAYLOR", "MOORE", "JACKSON", "MARTIN", "LEE", "PEREZ", "THOMPSON", "WHITE", "HARRIS", "SANCHEZ", "CLARK", "RAMIREZ", "LEWIS", "ROBINSON", "WALKER", "YOUNG", "ALLEN", "KING", "WRIGHT", "SCOTT", "TORRES", "NGUYEN", "HILL", "FLORES", "GREEN", "ADAMS", "NELSON", "BAKER", "HALL", "RIVERA", "CAMPBELL", "MITCHELL", "CARTER", "ROBERTS" };
+        var firstNames = new[] { "JAMES", "MARY", "JOHN", "PATRICIA", "ROBERT", "JENNIFER", "MICHAEL", "LINDA", "WILLIAM", "ELIZABETH", "DAVID", "BARBARA", "RICHARD", "SUSAN", "JOSEPH", "JESSICA", "THOMAS", "SARAH", "CHARLES", "KAREN", "CHRISTOPHER", "NANCY", "DANIEL", "LISA", "MATTHEW", "BETTY", "ANTHONY", "MARGARET", "MARK", "SANDRA", "DONALD", "ASHLEY", "STEVEN", "KIMBERLY", "PAUL", "EMILY", "ANDREW", "DONNA", "JOSHUA", "MICHELLE", "KENNETH", "DOROTHY", "KEVIN", "CAROL", "BRIAN", "AMANDA", "GEORGE", "MELISSA", "TIMOTHY", "DEBORAH" };
+        var middleNames = new[] { "JAMES", "MARIE", "ANN", "LYNN", "LEE", "MICHAEL", "JOHN", "DAVID", "ELIZABETH", "ROSE", "JOSEPH", "RAY", "ALLEN", "WAYNE", "DALE", "JEAN", "ANNE", "RENEE", "NICOLE", "ANTHONY" };
+        var races = new[] { "White", "Black or African American", "Asian", "American Indian or Alaska Native", "Native Hawaiian or Other Pacific Islander", "Hispanic or Latino" };
+        var sexes = new[] { "Male", "Female" };
+        var cities = new[] { "METROPOLIS", "SPRINGFIELD", "RIVERSIDE", "LAKESIDE", "OAKTOWN", "HILLCREST", "BAYVIEW", "PARKDALE", "WESTFIELD", "EASTSIDE", "NORTHGATE", "SOUTHPORT", "MIDTOWN", "CROSSROADS", "SUMMIT", "VALLEY VIEW", "PINE GROVE", "CEDAR FALLS", "MAPLE HILLS", "WILLOW CREEK" };
+        var states = new[] { "CA", "TX", "FL", "NY", "PA", "IL", "OH", "GA", "NC", "MI" };
+
+        var random = new Random(42); // Fixed seed for consistent demo data
+        var results = new List<object>();
+
+        for (int i = 0; i < count; i++)
+        {
+            var id = 10000 + i;
+            var lastName = lastNames[random.Next(lastNames.Length)];
+            var firstName = firstNames[random.Next(firstNames.Length)];
+            var middleName = middleNames[random.Next(middleNames.Length)];
+            var sex = sexes[random.Next(sexes.Length)];
+            var race = races[random.Next(races.Length)];
+            var city = cities[random.Next(cities.Length)];
+            var state = states[random.Next(states.Length)];
+            var hasWarrants = random.Next(100) < 15; // 15% have warrants
+            var hasAlerts = random.Next(100) < 20; // 20% have alerts
+            var year = random.Next(1950, 2006); // Ages from ~18 to 74
+            var month = random.Next(1, 13);
+            var day = random.Next(1, 29);
+            var lastFour = random.Next(1000, 10000);
+
+            var personData = new
+            {
+                id,
+                globalSubjectId = id,
+                lastName,
+                firstName,
+                middleName,
+                dateOfBirth = (object?)new { ticks = new DateTime(year, month, day).Ticks },
+                ssn = $"***-**-{lastFour}",
+                race = new { raw = race, formatted = race },
+                sex = new { raw = sex, formatted = sex },
+                city,
+                state,
+                hasWarrants,
+                hasAlerts
+            };
+
+            results.Add(new
+            {
+                id = id.ToString(),
+                source = personData
+            });
+        }
+
+        return results.ToArray();
     }
 
     public static string GetPersonDetailResponse(int personId)
@@ -72,20 +109,20 @@ public static class DemoData
                 driversLicenseState = new { raw = "CA", formatted = "California" },
                 race = new { raw = "W", formatted = "White" },
                 ethnicity = new { raw = "N", formatted = "Not Hispanic" },
-                sex = "Male",
-                maritalStatus = "Married",
+                sex = new { raw = "M", formatted = "Male" },
+                maritalStatus = new { raw = "M", formatted = "Married" },
                 citizenship = "US Citizen"
             },
             physicalCharacteristics = new
             {
                 height = 72, // inches
                 weight = 180, // pounds
-                hairColor = "Brown",
-                eyeColor = "Blue",
-                buildType = "Medium",
-                complexion = "Fair",
-                glasses = false,
-                facialHair = "None"
+                hairColor = new { raw = "BRO", formatted = "Brown" },
+                eyeColor = new { raw = "BLU", formatted = "Blue" },
+                buildType = new { raw = "M", formatted = "Medium" },
+                complexion = new { raw = "FAI", formatted = "Fair" },
+                glasses = new { raw = "N", formatted = "No" },
+                facialHair = new { raw = "NON", formatted = "None" }
             },
             addresses = new object[]
             {
