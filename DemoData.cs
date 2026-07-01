@@ -20,7 +20,7 @@ public static class DemoData
                     lastName = "SMITH",
                     firstName = "JOHN",
                     middleName = "DAVID",
-                    dateOfBirth = "1985-03-15",
+                    dateOfBirth = (object?)new { ticks = new DateTime(1985, 3, 15).Ticks },
                     ssn = "***-**-4567",
                     race = "White",
                     sex = "Male",
@@ -36,7 +36,7 @@ public static class DemoData
                     lastName = "SMITH",
                     firstName = "JANE",
                     middleName = "MARIE",
-                    dateOfBirth = "1990-07-22",
+                    dateOfBirth = (object?)new { ticks = new DateTime(1990, 7, 22).Ticks },
                     ssn = "***-**-7890",
                     race = "White",
                     sex = "Female",
@@ -65,13 +65,13 @@ public static class DemoData
                 firstName = "JOHN",
                 middleName = "DAVID",
                 suffix = null as string,
-                dateOfBirth = "1985-03-15",
+                dateOfBirth = (object?)new { ticks = new DateTime(1985, 3, 15).Ticks },
                 age = 41,
                 ssn = "123-45-4567",
                 driversLicenseNumber = "D1234567",
-                driversLicenseState = "CA",
-                race = "White",
-                ethnicity = "Not Hispanic",
+                driversLicenseState = new { raw = "CA", formatted = "California" },
+                race = new { raw = "W", formatted = "White" },
+                ethnicity = new { raw = "N", formatted = "Not Hispanic" },
                 sex = "Male",
                 maritalStatus = "Married",
                 citizenship = "US Citizen"
@@ -98,8 +98,8 @@ public static class DemoData
                     state = "CA",
                     zip = "90001",
                     isPrimary = true,
-                    startDate = "2020-01-01",
-                    endDate = (string?)null
+                    startDate = (object?)new { ticks = new DateTime(2020, 1, 1).Ticks },
+                    endDate = (object?)null
                 },
                 new
                 {
@@ -110,8 +110,8 @@ public static class DemoData
                     state = "CA",
                     zip = "90002",
                     isPrimary = false,
-                    startDate = "2015-06-01",
-                    endDate = (string?)"2019-12-31"
+                    startDate = (object?)new { ticks = new DateTime(2015, 6, 1).Ticks },
+                    endDate = (object?)new { ticks = new DateTime(2019, 12, 31).Ticks }
                 }
             },
             aliases = new[]
@@ -196,9 +196,9 @@ public static class DemoData
             general = new
             {
                 summary = "Theft from vehicle - parking lot at 100 Commerce St",
-                status = "Under Investigation",
+                status = new { raw = "Under Investigation", formatted = "Under Investigation" },
                 disposition = null as string,
-                reportingOfficer = "Officer J. Rodriguez (Badge 2547)",
+                reportingOfficer = new { raw = "2547", formatted = "Officer J. Rodriguez (Badge 2547)" },
                 agency = "Metropolis Police Department"
             },
             location = new
@@ -229,7 +229,7 @@ public static class DemoData
                     globalSubjectId = 54321,
                     name = "DOE, JANE MARIE",
                     role = "Victim",
-                    dateOfBirth = "1992-05-10",
+                    dateOfBirth = (object?)new { ticks = new DateTime(1992, 5, 10).Ticks },
                     address = "789 PINE ST, METROPOLIS, CA 90001"
                 }
             },
@@ -298,7 +298,7 @@ public static class DemoData
                     globalSubjectId = 12345,
                     subjectName = "SMITH, JOHN DAVID",
                     charge = "Failure to Appear - Traffic",
-                    issueDate = "2024-03-15",
+                    issueDate = (object?)new { ticks = new DateTime(2024, 3, 15).Ticks },
                     issuingCourt = "Metropolis Municipal Court",
                     bail = 500.00,
                     status = "Active",
@@ -311,7 +311,7 @@ public static class DemoData
                     globalSubjectId = 12345,
                     subjectName = "SMITH, JOHN DAVID",
                     charge = "Petty Theft",
-                    issueDate = "2023-11-01",
+                    issueDate = (object?)new { ticks = new DateTime(2023, 11, 1).Ticks },
                     issuingCourt = "Metropolis Municipal Court",
                     bail = 1000.00,
                     status = "Active",
@@ -339,9 +339,9 @@ public static class DemoData
                     alertType = "Armed and Dangerous",
                     category = "Officer Safety",
                     description = "Subject has history of violent resistance and may be armed",
-                    expirationDate = "2025-06-24",
+                    expirationDate = (object?)new { ticks = new DateTime(2025, 6, 24).Ticks },
                     isActive = true,
-                    createdDate = "2024-01-15",
+                    createdDate = (object?)new { ticks = new DateTime(2024, 1, 15).Ticks },
                     createdBy = "Sgt. Thompson"
                 },
                 new
@@ -352,9 +352,9 @@ public static class DemoData
                     alertType = "Gang Affiliation",
                     category = "Intelligence",
                     description = "Known member of Northside Gang",
-                    expirationDate = null as string,
+                    expirationDate = (object?)null,
                     isActive = true,
-                    createdDate = "2023-08-10",
+                    createdDate = (object?)new { ticks = new DateTime(2023, 8, 10).Ticks },
                     createdBy = "Det. Garcia"
                 }
             },

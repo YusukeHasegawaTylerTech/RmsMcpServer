@@ -1,8 +1,14 @@
 using RmsMcpServer;
+using Services.WebApi.Clients.Records.Public;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register mock RMS client for development
+builder.Services.AddSingleton<IPublicRecordsClient, MockPublicRecordsClient>();
+
+// Register MCP server implementation
 builder.Services.AddSingleton<RmsMcpServerImplementation>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>

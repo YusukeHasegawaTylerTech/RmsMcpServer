@@ -1,23 +1,32 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Services.WebApi.Clients.Records.Public;
+using NewWorld.Aegis.Rms.Domain.Contracts;
+using AlertSearchRequest = NewWorld.Rms.Services.WebApi.Public.Contracts.Alerts.AlertSearchRequest;
+using ArrestSearchRequest = NewWorld.Rms.Services.WebApi.Public.Contracts.Arrests.ArrestSearchRequest;
+using GlobalSubjectSearchRequest = NewWorld.Rms.Services.WebApi.Public.Contracts.GlobalSubjects.GlobalSubjectSearchRequest;
+using WarrantSearchRequest = NewWorld.Rms.Services.WebApi.Public.Contracts.Warrants.WarrantSearchRequest;
 
 namespace RmsMcpServer;
 
 /// <summary>
-/// Minimal MCP server implementation that communicates via stdio JSON-RPC
-/// This is a simplified implementation demonstrating the concept
+/// MCP server implementation that communicates via JSON-RPC and provides RMS data access
 /// </summary>
 public class RmsMcpServerImplementation
 {
     private readonly ILogger _logger;
+    private readonly IPublicRecordsClient _rmsClient;
     private readonly Dictionary<string, ToolDefinition> _tools = new();
 
-    public RmsMcpServerImplementation(ILogger<RmsMcpServerImplementation> logger)
+    public RmsMcpServerImplementation(
+        ILogger<RmsMcpServerImplementation> logger,
+        IPublicRecordsClient rmsClient)
     {
         _logger = logger;
+        _rmsClient = rmsClient;
         RegisterTools();
-        _logger.LogInformation("RMS MCP Server initialized in DEMO mode with {Count} tools", _tools.Count);
+        _logger.LogInformation("RMS MCP Server initialized with {Count} tools", _tools.Count);
     }
 
     private void RegisterTools()
@@ -189,38 +198,103 @@ public class RmsMcpServerImplementation
         return Task.FromResult(JsonConvert.SerializeObject(response));
     }
 
-    // Tool handlers - all return demo data
-    private Task<string> SearchGlobalSubjectsAsync(JsonElement args) =>
-        Task.FromResult(DemoData.GetSearchGlobalSubjectsResponse());
+    // Tool handlers - call through IPublicRecordsClient interface
+    private async Task<string> SearchGlobalSubjectsAsync(JsonElement args)
+    {
+        var request = new GlobalSubjectSearchRequest();
 
-    private Task<string> GetPersonDetailAsync(JsonElement args)
+        var response = await _rmsClient.SearchGlobalSubjectsAsync(
+            request,
+            string.Empty, // bearerToken
+            CancellationToken.None);
+
+        return JsonConvert.SerializeObject(response, Formatting.Indented);
+    }
+
+    private async Task<string> GetPersonDetailAsync(JsonElement args)
     {
         var personId = args.TryGetProperty("personId", out var p) ? p.GetInt32() : 12345;
-        return Task.FromResult(DemoData.GetPersonDetailResponse(personId));
+
+        var response = await _rmsClient.GetPersonDetailAsync(
+            personId,
+            new[] { UsageType.Person },
+            string.Empty,
+            CancellationToken.None);
+
+        return JsonConvert.SerializeObject(response, Formatting.Indented);
     }
 
-    private Task<string> SearchIncidentsAsync(JsonElement args) =>
-        Task.FromResult(DemoData.GetSearchIncidentsResponse());
-
-    private Task<string> GetIncidentDetailAsync(JsonElement args)
+    private async Task<string> SearchIncidentsAsync(JsonElement args)
     {
-        var incidentId = args.TryGetProperty("incidentId", out var i) ? i.GetInt32() : 2024001234;
-        return Task.FromResult(DemoData.GetIncidentDetailResponse(incidentId));
+        // Note: RMS API uses Cases, not Incidents
+        // Return empty for now - mock client can handle this
+        return await Task.FromResult(JsonConvert.SerializeObject(new { results = new object[0], totalCount = 0 }));
     }
 
-    private Task<string> SearchArrestsAsync(JsonElement args) =>
-        Task.FromResult(DemoData.GetSearchArrestsResponse());
+    private async Task<string> GetIncidentDetailAsync(JsonElement args)
+    {
+        var caseId = args.TryGetProperty("incidentId", out var i) ? i.GetInt32() : 2024001234;
 
-    private Task<string> SearchWarrantsAsync(JsonElement args) =>
-        Task.FromResult(DemoData.GetSearchWarrantsResponse());
+        var response = await _rmsClient.GetCaseDetailAsync(
+            caseId,
+            new[] { UsageType.Case },
+            string.Empty,
+            CancellationToken.None);
 
-    private Task<string> SearchAlertsAsync(JsonElement args) =>
-        Task.FromResult(DemoData.GetSearchAlertsResponse());
+        return JsonConvert.SerializeObject(response, Formatting.Indented);
+    }
 
-    private Task<string> GetPersonActivityAsync(JsonElement args)
+    private async Task<string> SearchArrestsAsync(JsonElement args)
+    {
+        var request = new ArrestSearchRequest();
+
+        var response = await _rmsClient.SearchArrestsAsync(
+            request,
+            string.Empty,
+            CancellationToken.None);
+
+        return JsonConvert.SerializeObject(response, Formatting.Indented);
+    }
+
+    private async Task<string> SearchWarrantsAsync(JsonElement args)
+    {
+        var request = new WarrantSearchRequest();
+
+        var response = await _rmsClient.SearchWarrantsAsync(
+            request,
+            string.Empty,
+            CancellationToken.None);
+
+        return JsonConvert.SerializeObject(response, Formatting.Indented);
+    }
+
+    private async Task<string> SearchAlertsAsync(JsonElement args)
+    {
+        var request = new AlertSearchRequest();
+
+        var response = await _rmsClient.SearchAlertsAsync(
+            request,
+            string.Empty,
+            CancellationToken.None);
+
+        return JsonConvert.SerializeObject(response, Formatting.Indented);
+    }
+
+    private async Task<string> GetPersonActivityAsync(JsonElement args)
     {
         var globalSubjectId = args.TryGetProperty("globalSubjectId", out var g) ? g.GetInt32() : 12345;
-        return Task.FromResult(DemoData.GetPersonActivityResponse(globalSubjectId));
+
+        var request = new NewWorld.Aegis.Rms.Domain.Contracts.GlobalSubjects.GlobalSubjectActivitySearchRequest
+        {
+            GlobalSubjectIds = new[] { globalSubjectId }
+        };
+
+        var response = await _rmsClient.GetActivitiesForGlobalSubjectAsync(
+            request,
+            string.Empty,
+            CancellationToken.None);
+
+        return JsonConvert.SerializeObject(response, Formatting.Indented);
     }
 
     private class ToolDefinition
