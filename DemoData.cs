@@ -49,9 +49,16 @@ public static class DemoData
         for (int i = 0; i < count; i++)
         {
             var id = 10000 + i;
+
             var lastName = lastNames[random.Next(lastNames.Length)];
             var firstName = firstNames[random.Next(firstNames.Length)];
             var middleName = middleNames[random.Next(middleNames.Length)];
+            if (i == 0)
+            {
+                lastName = "SMITH";
+                firstName = "JOHN";
+                middleName = "DAVID";
+            }
             var sex = sexes[random.Next(sexes.Length)];
             var race = races[random.Next(races.Length)];
             var city = cities[random.Next(cities.Length)];
