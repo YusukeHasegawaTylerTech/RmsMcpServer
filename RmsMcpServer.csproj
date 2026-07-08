@@ -14,4 +14,13 @@
     <ProjectReference Include="..\..\nwps-rms-records\Services\WebApi.Public\Services.WebApi.Public.Client\Services.WebApi.Clients.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="NewWorld.Rms.Services.WebApi.Public">
+      <HintPath>..\..\nwps-rms-records\Services\WebApi.Public\Services.WebApi.Public\bin\Debug\net10.0\NewWorld.Rms.Services.WebApi.Public.dll</HintPath>
+    </Reference>
+    <Reference Include="NewWorld.Rms.Services.WebApi.Public.Client.DependencyInjection">
+      <HintPath>..\..\nwps-rms-records\Services\WebApi.Public\Services.WebApi.Public.Client.DependencyInjection\bin\Debug\net10.0\NewWorld.Rms.Services.WebApi.Public.Client.DependencyInjection.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

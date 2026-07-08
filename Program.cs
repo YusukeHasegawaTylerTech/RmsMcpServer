@@ -1,10 +1,25 @@
+using NewWorld.Rms.Services.WebApi.Public.Client.DependencyInjection;
 using RmsMcpServer;
 using Services.WebApi.Clients.Records.Public;
+using Services.WebApi.Clients.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Register mock RMS client for development
-builder.Services.AddSingleton<IPublicRecordsClient, MockPublicRecordsClient>();
+//builder.Services.AddSingleton<IPublicRecordsClient, MockPublicRecordsClient>();
+
+builder.Services.Configure<PublicRecordsClientOptions>(
+    builder.Configuration.GetSection("PublicRecordsClientOptions"));
+builder.Services.Configure<PublicRecordsClientOptions>(
+    builder.Configuration.GetSection(PublicRecordsClientOptions.ConfigurationSection));
+
+builder.Services.AddPublicRecordsClient(
+        builder.Configuration.GetSection(PublicRecordsClientOptions.ConfigurationSection))
+    .AddSecurityTokenProvider(
+        builder.Configuration.GetSection(SecurityTokenProviderOptions.ConfigurationSection))
+    .AddSigningCertificateProvider(
+        builder.Configuration.GetSection(SecurityTokenProviderOptions.ConfigurationSection))
+    .ClientBuilder.ConfigureSocketsHttpHandler();
 
 // Register MCP server implementation
 builder.Services.AddSingleton<RmsMcpServerImplementation>();

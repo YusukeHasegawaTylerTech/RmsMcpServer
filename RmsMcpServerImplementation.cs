@@ -1,8 +1,7 @@
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Services.WebApi.Clients.Records.Public;
 using NewWorld.Aegis.Rms.Domain.Contracts;
+using Services.WebApi.Clients.Records.Public;
 using AlertSearchRequest = NewWorld.Rms.Services.WebApi.Public.Contracts.Alerts.AlertSearchRequest;
 using ArrestSearchRequest = NewWorld.Rms.Services.WebApi.Public.Contracts.Arrests.ArrestSearchRequest;
 using GlobalSubjectSearchRequest = NewWorld.Rms.Services.WebApi.Public.Contracts.GlobalSubjects.GlobalSubjectSearchRequest;
@@ -326,14 +325,17 @@ public class RmsMcpServerImplementation
 
             // Pagination: default to 50 results starting at 0
             Size = args.TryGetProperty("size", out var s) ? s.GetInt32() : 50,
-            Start = args.TryGetProperty("start", out var st) ? st.GetInt32() : 0
+            Start = args.TryGetProperty("start", out var st) ? st.GetInt32() : 0,
+            Location = new NewWorld.Rms.Services.WebApi.Public.Contracts.Domain.LocationSearchRequest()
+            {
+                IgnoreLocationCriteriaOnVerificationFailure = true,
+            }
         };
 
         var response = await _rmsClient.SearchGlobalSubjectsAsync(
-            request,
-            string.Empty, // bearerToken
-            CancellationToken.None);
-
+        request,
+        string.Empty, // bearerToken
+        CancellationToken.None);
         return JsonConvert.SerializeObject(response, Formatting.Indented);
     }
 
