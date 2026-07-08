@@ -3,7 +3,7 @@
   "mcpServers": {
     "rms-mcp-server": {
       "type": "http",
-      "url": "http://localhost:60183/mcp",
+      "url": "http://localhost:6613/mcp",
       "headers": {}
     }
   }
