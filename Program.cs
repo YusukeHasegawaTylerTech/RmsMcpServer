@@ -5,9 +5,6 @@ using Services.WebApi.Clients.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register mock RMS client for development
-//builder.Services.AddSingleton<IPublicRecordsClient, MockPublicRecordsClient>();
-
 builder.Services.Configure<PublicRecordsClientOptions>(
     builder.Configuration.GetSection("PublicRecordsClientOptions"));
 builder.Services.Configure<PublicRecordsClientOptions>(
