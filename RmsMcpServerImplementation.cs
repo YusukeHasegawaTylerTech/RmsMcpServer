@@ -51,7 +51,7 @@ public class RmsMcpServerImplementation
             }
         };
 
-        RegisterTool("search_global_subjects",
+        RegisterTool("tyl_rms_search_global_subjects",
             "Search for persons or businesses in RMS by name, DOB, SSN, or other identifiers",
             SearchGlobalSubjectsAsync,
             new
@@ -105,7 +105,7 @@ public class RmsMcpServerImplementation
                 }
             });
 
-        RegisterTool("get_person_detail",
+        RegisterTool("tyl_rms_get_person_detail",
             "Get detailed information about a specific person including demographics, addresses, and aliases",
             GetPersonDetailAsync,
             new
@@ -121,11 +121,11 @@ public class RmsMcpServerImplementation
                 }
             });
 
-        RegisterTool("search_incidents",
+        RegisterTool("tyl_rms_search_incidents",
             "Search for RMS incidents/reports by date range, case number, or location",
             SearchIncidentsAsync);
 
-        RegisterTool("get_incident_detail",
+        RegisterTool("tyl_rms_get_incident_detail",
             "Get complete details for a specific incident including offenses, subjects, and narrative",
             GetIncidentDetailAsync,
             new
@@ -141,22 +141,22 @@ public class RmsMcpServerImplementation
                 }
             });
 
-        RegisterTool("search_arrests",
+        RegisterTool("tyl_rms_search_arrests",
             "Search for arrests by date range, person, or agency",
             SearchArrestsAsync,
             paginatedSchema);
 
-        RegisterTool("search_warrants",
+        RegisterTool("tyl_rms_search_warrants",
             "Search for active or historical warrants by person or warrant number",
             SearchWarrantsAsync,
             paginatedSchema);
 
-        RegisterTool("search_alerts",
+        RegisterTool("tyl_rms_search_alerts",
             "Search for alerts/cautions associated with persons, locations, or vehicles",
             SearchAlertsAsync,
             paginatedSchema);
 
-        RegisterTool("get_person_activity",
+        RegisterTool("tyl_rms_get_person_activity",
             "Get complete activity history for a person including incidents, arrests, and citations",
             GetPersonActivityAsync,
             new
